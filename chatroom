@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chatroom</title>
+    <script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.1.2/firebase-firestore.js"></script>
+    <style>
+        /* Basic styling */
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        #chat {
+            max-width: 600px;
+            margin: auto;
+            padding: 20px;
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        #messages {
+            list-style-type: none;
+            padding: 0;
+            height: 300px;
+            overflow-y: scroll;
+        }
+        #messages li {
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div id="chat">
+        <h2>Chatroom</h2>
+        <ul id="messages"></ul>
+        <input id="messageInput" type="text" placeholder="Type a message..." />
+        <button id="sendButton">Send</button>
+    </div>
+
+    <script>
+        // Your Firebase configuration here
+        const firebaseConfig = {
+            apiKey: "AIzaSyAV18KjBGlLS-JjVWPij5X3-mZp_1Gbm6k",
+            authDomain: "viblyforthunkable.firebaseapp.com",
+            projectId: "viblyforthunkable",
+            storageBucket: "viblyforthunkable.firebasestorage.app",
+            messagingSenderId: "583120310938",
+            appId: "1:583120310938:web:8912b41eda71939a330523"
+        };
+
+        // Initialize Firebase
+        const app = firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // Send Message Function
+        function sendMessage() {
+            const messageInput = document.getElementById('messageInput');
+            const messageContent = messageInput.value;
+
+            if (messageContent) {
+                db.collection('messages').add({
+                    content: messageContent,
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                }).then(() => {
+                    messageInput.value = ''; // Clear input
+                }).catch((error) => {
+                    console.error("Error sending message: ", error);
+                });
+            }
+        }
+
+        // Load Messages Function
+        function loadMessages() {
+            db.collection('messages').orderBy('timestamp')
+                .onSnapshot((snapshot) => {
+                    const messagesList = document.getElementById('messages');
+                    messagesList.innerHTML = ''; // Clear current messages
+                    snapshot.forEach((doc) => {
+                        const message = doc.data();
+                        const li = document.createElement('li');
+                        li.textContent = message.content;
+                        messagesList.appendChild(li);
+                    });
+                });
+        }
+
+        // Event Listener for Send Button
+        document.getElementById('sendButton').addEventListener('click', sendMessage);
+
+        // Load messages on page load
+        loadMessages();
+    </script>
+</body>
+</html>
